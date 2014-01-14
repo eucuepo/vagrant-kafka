@@ -1,0 +1,59 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.box = "centos64"
+  config.vm.box_url = "http://puppet-vagrant-boxes.puppetlabs.com/centos-64-x64-vbox4210.box"
+  config.ssh.forward_agent = true
+  config.vm.provision "shell", path: "scripts/init.sh"
+  
+  # configure zookeeper cluster
+  config.vm.define "zookeeper1" do |s|
+    s.vm.hostname = "zookeeper1"
+    s.vm.network "public_network", use_dhcp_assigned_default_route: true
+    s.vm.network "private_network", ip: "10.30.3.2", netmask: "255.255.255.0", virtualbox__intnet: "servidors"
+    s.vm.provision "shell", path: "scripts/zookeeper.sh", args:"1", privileged: "false"
+  end
+  
+  config.vm.define "zookeeper2" do |s|
+    s.vm.hostname = "zookeeper2"
+    s.vm.network "public_network", use_dhcp_assigned_default_route: true
+    s.vm.network "private_network", ip: "10.30.3.3", netmask: "255.255.255.0", virtualbox__intnet: "servidors"
+    s.vm.provision "shell", path: "scripts/zookeeper.sh", args:"2", privileged: "false"
+  end
+  
+  config.vm.define "zookeeper3" do |s|
+    s.vm.hostname = "zookeeper"
+    s.vm.network "public_network", use_dhcp_assigned_default_route: true
+    s.vm.network "private_network", ip: "10.30.3.4", netmask: "255.255.255.0", virtualbox__intnet: "servidors"
+    s.vm.provision "shell", path: "scripts/zookeeper.sh", args:"3", privileged: "false"
+  end
+
+  # configure brokers
+  config.vm.define "broker1" do |s|
+    s.vm.hostname = "broker1"
+    s.vm.network "private_network", ip: "10.30.3.30", netmask: "255.255.255.0", virtualbox__intnet: "servidors", drop_nat_interface_default_route: true
+    s.vm.provision "shell", path: "scripts/broker.sh", args:"1", privileged: "false"
+  end
+
+  config.vm.define "broker2" do |s|
+    s.vm.hostname = "broker2"
+    s.vm.network "private_network", ip: "10.30.3.20", netmask: "255.255.255.0", virtualbox__intnet: "servidors", drop_nat_interface_default_route: true
+    s.vm.provision "shell", path: "scripts/broker.sh", args:"2", privileged: "false"
+  end
+
+  config.vm.define "broker3" do |s|
+    s.vm.hostname = "broker3"
+    s.vm.network "private_network", ip: "10.30.3.10", netmask: "255.255.255.0", virtualbox__intnet: "servidors", drop_nat_interface_default_route: true
+    s.vm.provision "shell", path: "scripts/broker.sh", args:"3", privileged: "false"
+  end
+
+  config.vm.provider "virtualbox" do |v|
+    v.gui = true
+    v.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
+  end
+end
+
