@@ -10,7 +10,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.forward_agent = true
   config.vm.provision "shell", path: "scripts/init.sh"
   
-  #configure zookeeper cluster
+  # configure zookeeper cluster
   for i in 1..3
     config.vm.define "zookeeper#{i}" do |s|
       s.vm.hostname = "zookeeper#{i}"
