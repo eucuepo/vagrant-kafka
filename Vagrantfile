@@ -1,7 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-
 Vagrant.configure("2") do |config|
 
   config.vm.box = "puppetlabs/centos-6.6-64-puppet"
@@ -30,7 +29,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provider "virtualbox" do |v|
+    #  This setting controls how much cpu time a virtual CPU can use. A value of 50 implies a single virtual CPU can use up to 50% of a single host CPU.
     v.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
   end
 end
-
