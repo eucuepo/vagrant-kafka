@@ -82,7 +82,7 @@ vagrant destroy -f
 ```
 
 
-##Insights
+## Insights
 
 ### Zookeeper (ZK)
 
