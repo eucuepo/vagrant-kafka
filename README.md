@@ -12,7 +12,7 @@ Each host is a Centos 6.6 64-bit VM provisioned with JDK 8 and Kafka 0.9.0.1.
 
 Here we will be using the verion of Zookeeper that comes pre-packaged with Kafka. This will be Zookeeper version 3.4.6 for the version of Kafka we use. 
 
-Prerrequisites
+Prerequisites
 -------------------------
 
 * Vagrant (tested on 1.9.1)
@@ -65,7 +65,7 @@ Login to any host with e.g., ```vagrant ssh broker1```. Some scripts have been i
 
 * Topics can be listed with ```/vagrant/scripts/list-topics.sh```
 
-* Start a console producer ```/vagrant/scripts/producer.sh <opic name>```. Type few messages and seperate them with new lines (`ctl-C` to exit). 
+* Start a console producer ```/vagrant/scripts/producer.sh <topic name>```. Type few messages and seperate them with new lines (`ctl-C` to exit). 
 
 * ```/vagrant/scripts/consumer.sh <topic name>```: this will create a console consumer, getting messages from the topic created before. It will read all the messages each time starting from the beginning.
 
@@ -82,7 +82,7 @@ vagrant destroy -f
 ```
 
 
-##Insights
+## Insights
 
 ### Zookeeper (ZK)
 
@@ -168,7 +168,7 @@ You can then test that the line was added by running the consumer
 /vagrant/scripts/consumer.sh test-one
 ```
 
-##### Add a continues stream of data
+##### Add a continued stream of data
 
 Running `vmstat` will periodically export stats about the VM you are attached to. 
 
