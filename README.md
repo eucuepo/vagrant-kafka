@@ -8,22 +8,22 @@ This configuration will start and provision six CentOS6 VMs:
 * Three hosts forming a three node Apache Zookeeper Quorum (Replicated ZooKeeper)
 * Three Apache Kafka nodes with one broker each
 
-Each host is a Centos 6.6 64-bit VM provisioned with JDK 8 and Kafka 0.9.0.1. 
+Each host is a Centos 6.6 64-bit VM provisioned with JDK 8 and Kafka 1.0.0. 
 
-Here we will be using the verion of Zookeeper that comes pre-packaged with Kafka. This will be Zookeeper version 3.4.6 for the version of Kafka we use. 
+Here we will be using the verion of Zookeeper that comes pre-packaged with Kafka. This will be Zookeeper version 3.4.10 for the version of Kafka we use. 
 
 Prerequisites
 -------------------------
 
-* Vagrant (tested on 1.9.1)
-* VirtualBox (tested on 5.1.12)
+* Vagrant (tested with 1.9.1)
+* VirtualBox (tested with 5.1.12)
 
 Setup
 -------------------------
 
 To start it up, just git clone this repo and execute ```vagrant up```. This will take a while the first time as it downloads all required dependencies for you.
 
-Kafka is installed on all hosts at ```$HOME/kafka_2.10-0.9.0.1/```
+Kafka is installed on all hosts and can be easily accessed through the environment variable ```$KAFKA_HOME```
 
 Here is the mapping of VMs to their private IPs:
 
@@ -61,7 +61,7 @@ VM, run 'vagrant status NAME''.
 
 Login to any host with e.g., ```vagrant ssh broker1```. Some scripts have been included for convenience:
 
-* Create a new topic ```/vagrant/scripts/create_topic.sh <topic name>``` (create as many as you see fit)
+* Create a new topic ```/vagrant/scripts/create-topic.sh <topic name>``` (create as many as you see fit)
 
 * Topics can be listed with ```/vagrant/scripts/list-topics.sh```
 
@@ -91,7 +91,7 @@ Here are some commands you can run on any of the nodes to see some of the intern
 
 #### Open a ZK shell
 
-```$HOME/kafka_2.10-0.9.0.1/bin/zookeeper-shell.sh 10.30.3.2:2181``` 
+```$KAFKA_HOME/bin/zookeeper-shell.sh 10.30.3.2:2181``` 
 
 (you can use the IP of any of the ZK servers)
 
@@ -100,10 +100,10 @@ Inside the shell we can browse the zNodes similar to a Linux filesystem:
 
 ```bash
 ls /
-[controller, controller_epoch, brokers, zookeeper, admin, isr_change_notification, consumers, config]
+[cluster, controller, controller_epoch, brokers, zookeeper, admin, isr_change_notification, consumers, log_dir_event_notification, latest_producer_id_block, config]
 
 ls /brokers/topics
-[t1, t2]
+[t1, t2, __consumer_offsets]
 
 ls /brokers/ids
 [1, 2, 3]
@@ -152,13 +152,13 @@ vagrant ssh zookeeper1
 Create a topic 
 
 ```bash
- /vagrant/scripts/create_topic.sh test-one
+ /vagrant/scripts/create-topic.sh test-one
 ```
 
 Send data to the Kafka topic
 
 ```bash
-echo "Yet another line from stdin" | ./kafka_2.10-0.9.0.1/bin/kafka-console-producer.sh \
+echo "Yet another line from stdin" | $KAFKA_HOME/bin/kafka-console-producer.sh \
    --topic test-one --broker-list 10.30.3.10:9092,10.30.3.20:9092,10.30.3.30:9092
 ```
 
@@ -188,7 +188,7 @@ procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----
 Redirecing this output to Kafka creates a basic form of a streaming producer.
 
 ```bash
-vmstat -a 1 -n 100 | ./kafka_2.10-0.9.0.1/bin/kafka-console-producer.sh \
+vmstat -a 1 -n 100 | $KAFKA_HOME/bin/kafka-console-producer.sh \
    --topic test-one --broker-list 10.30.3.10:9092,10.30.3.20:9092,10.30.3.30:9092 &
 ```
 
@@ -205,7 +205,7 @@ When you are all done, kill the consumer by `ctl-C`. The producer will terminate
 
 #### Offsets
 
-The `create_topic.sh` script creates a topic with replication factor 3 and 1 number of partitions. 
+The `create-topic.sh` script creates a topic with replication factor 3 and 1 number of partitions. 
 
 Assuming you have completed the `vmstat` example above using topic `test-one`:
 

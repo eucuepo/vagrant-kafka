@@ -1,30 +1,25 @@
 #!/bin/bash
-#download rpm if not present
 
-KAFKA_VERSION="0.9.0.1"
-KAFKA_NAME="kafka_2.10-$KAFKA_VERSION"
-KAFKA_TARGET="/vagrant/tars/"
+echo "downloading kafka...$KAFKA_VERSION"
 
-echo Downloading kafka...$KAFKA_VERSION 
-
+#download kafka binaries if not present
 if [ ! -f  $KAFKA_TARGET/$KAFKA_NAME.tgz ]; then
    mkdir -p $KAFKA_TARGET
    wget -O "$KAFKA_TARGET/$KAFKA_NAME.tgz" http://apache.claz.org/kafka/"$KAFKA_VERSION/$KAFKA_NAME.tgz"
 fi
 
-JDK_VERSION="jdk-8u73-linux-x64"
-JDK_RPM="$JDK_VERSION.rpm"
-
+#download rpm if not present
 if [ ! -f /vagrant/rpm/$JDK_RPM ]; then
     echo Downloading JDK rpm
     mkdir -p /vagrant/rpm/
-    wget -O /vagrant/rpm/$JDK_RPM --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u73-b02/$JDK_RPM"
+    JDK_URL="http://download.oracle.com/otn-pub/java/jdk/8u$JAVA_REVISION-b12/e758a0de34e24606bca991d704f6dcbf/$JDK_RPM"
+    wget -O /vagrant/rpm/$JDK_RPM --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" "$JDK_URL"
 fi
 
 #disabling iptables
 /etc/init.d/iptables stop
 
-echo "installing jdk and kafka ..."
+echo "installing JDK and Kafka..."
 
 rpm -ivh /vagrant/rpm/$JDK_RPM
 
@@ -34,7 +29,7 @@ fi
 
 chown vagrant:vagrant -R $KAFKA_NAME
 
-echo "done installing jdk and Kafka"
+echo "done installing JDK and Kafka..."
 
 # chmod scripts
 chmod u+x /vagrant/scripts/*.sh
