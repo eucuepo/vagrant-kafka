@@ -8,14 +8,14 @@ This configuration will start and provision six CentOS6 VMs:
 * Three hosts forming a three node Apache Zookeeper Quorum (Replicated ZooKeeper)
 * Three Apache Kafka nodes with one broker each
 
-Each host is a Centos 6.6 64-bit VM provisioned with JDK 8 and Kafka 1.0.0. 
+Each host is a Centos 6.9 64-bit VM provisioned with JDK 8 and Kafka 1.0.0. 
 
 Here we will be using the verion of Zookeeper that comes pre-packaged with Kafka. This will be Zookeeper version 3.4.10 for the version of Kafka we use. 
 
 Prerequisites
 -------------------------
 
-* Vagrant (tested with 1.9.1)
+* Vagrant (tested with 2.0.2) **[make sure you are on 2.x.x version of Vagrant]**
 * VirtualBox (tested with 5.1.12)
 
 Setup
@@ -62,6 +62,8 @@ VM, run 'vagrant status NAME''.
 Login to any host with e.g., ```vagrant ssh broker1```. Some scripts have been included for convenience:
 
 * Create a new topic ```/vagrant/scripts/create-topic.sh <topic name>``` (create as many as you see fit)
+
+  **Note:** If this step fails, exit the VM and run ```vagrant up --provision``` (if error persists, please file an issue) 
 
 * Topics can be listed with ```/vagrant/scripts/list-topics.sh```
 
