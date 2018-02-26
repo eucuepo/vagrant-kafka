@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
 
-  config.vm.box = "puppetlabs/centos-6.6-64-puppet"
+  config.vm.box = "centos/6"
   config.ssh.forward_agent = true # So that boxes don't have to setup key-less ssh
   config.ssh.insert_key = false # To generate a new ssh key and don't use the default Vagrant one
 
@@ -11,10 +11,7 @@ Vagrant.configure("2") do |config|
      "KAFKA_VERSION" => "1.0.0",
      "KAFKA_NAME" => "kafka_2.11-$KAFKA_VERSION",
      "KAFKA_TARGET" => "/vagrant/tars/",
-     "KAFKA_HOME" => "$HOME/$KAFKA_NAME",
-     "JAVA_REVISION" => "151",
-     "JDK_VERSION" => "jdk-8u$JAVA_REVISION-linux-x64",
-     "JDK_RPM" => "$JDK_VERSION.rpm"
+     "KAFKA_HOME" => "$HOME/$KAFKA_NAME"
   }
 
   # escape environment variables to be loaded to /etc/profile.d/
