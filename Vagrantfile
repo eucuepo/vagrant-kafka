@@ -18,6 +18,7 @@ Vagrant.configure("2") do |config|
   as_str = vars.map{|k,str| ["export #{k}=#{str.gsub '$', '\$'}"] }.join("\n")
 
   # common provisioning for all 
+  config.vm.provision "shell", path: "scripts/hosts-file-setup.sh", env: vars
   config.vm.provision "shell", inline: "echo \"#{as_str}\" > /etc/profile.d/kafka_vagrant_env.sh", run: "always"
   config.vm.provision "shell", path: "scripts/init.sh", env: vars
  
@@ -25,8 +26,9 @@ Vagrant.configure("2") do |config|
   (1..3).each do |i|
     config.vm.define "zookeeper#{i}" do |s|
       s.vm.hostname = "zookeeper#{i}"
-      s.vm.network "private_network", ip: "10.30.3.#{i+1}", netmask: "255.255.255.0", virtualbox__intnet: "my-network", drop_nat_interface_default_route: true
-      s.vm.provision "shell", path: "scripts/zookeeper.sh", args:"#{i}", privileged: false, env: vars
+      s.vm.network "private_network", ip: "10.30.3.#{i+1}"
+	  #s.vm.network "private_network", ip: "10.30.3.#{i+1}", netmask: "255.255.255.0", virtualbox__intnet: "my-network", drop_nat_interface_default_route: true
+	  s.vm.provision "shell", run: "always", path: "scripts/zookeeper.sh", args:"#{i}", privileged: false, env: vars
     end
   end
 
@@ -34,8 +36,9 @@ Vagrant.configure("2") do |config|
   (1..3).each do |i|
     config.vm.define "broker#{i}" do |s|
       s.vm.hostname = "broker#{i}"
-      s.vm.network "private_network", ip: "10.30.3.#{4-i}0", netmask: "255.255.255.0", virtualbox__intnet: "my-network", drop_nat_interface_default_route: true
-      s.vm.provision "shell", path: "scripts/broker.sh", args:"#{i}", privileged: false, env: vars
+      s.vm.network "private_network", ip: "10.30.3.#{4-i}0"
+	  #s.vm.network "private_network", ip: "10.30.3.#{4-i}0", netmask: "255.255.255.0", virtualbox__intnet: "my-network", drop_nat_interface_default_route: true
+	  s.vm.provision "shell", run: "always", path: "scripts/broker.sh", args:"#{i}", privileged: false, env: vars
     end
   end
 
