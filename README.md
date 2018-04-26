@@ -27,14 +27,25 @@ Kafka is installed on all hosts and can be easily accessed through the environme
 
 Here is the mapping of VMs to their private IPs:
 
-| Name        | Address    |
-|-------------|------------|
-|zookeeper1   | 10.30.3.2  |
-|zookeeper2   | 10.30.3.3  |
-|zookeeper3   | 10.30.3.4  |
-|broker1      | 10.30.3.30 | 
-|broker2      | 10.30.3.20 |
-|broker3      | 10.30.3.10 |
+| VM Name    | Host Name | IP Address |
+| ---------- | --------- | ---------- |
+| zookeeper1 | vkc-zk1   | 10.30.3.2  |
+| zookeeper2 | vkc-zk2   | 10.30.3.3  |
+| zookeeper3 | vkc-zk3   | 10.30.3.4  |
+| broker1    | vkc-br1   | 10.30.3.30 |
+| broker2    | vkc-br2   | 10.30.3.20 |
+| broker3    | vkc-br3   | 10.30.3.10 |
+
+Hosts file entries:
+
+```
+10.30.3.2	vkc-zk1
+10.30.3.3 	vkc-zk2
+10.30.3.4 	vkc-zk3
+10.30.3.30 	vkc-br1
+10.30.3.20 	vkc-br2
+10.30.3.10 	vkc-br3
+```
 
 Zookeeper servers bind to port 2181. Kafka brokers bind to port 9092. 
 
@@ -117,7 +128,7 @@ After you have enough fun browsing ZK, type `ctl-C` to exit the shell.
 
 #### Get ZK version
 
-First we need to instal `nc`: 
+First we need to install `nc`: 
 
 ```bash
 sudo yum install nc -y
