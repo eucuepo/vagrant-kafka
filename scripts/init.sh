@@ -10,7 +10,7 @@ fi
 
 echo "installing JDK and Kafka..."
 
-su -c "yum -y install java-1.8.0-openjdk"
+su -c "yum -y install java-1.8.0-openjdk-devel"
 
 #disabling iptables
 /etc/init.d/iptables stop
