@@ -172,7 +172,7 @@ Send data to the Kafka topic
 
 ```bash
 echo "Yet another line from stdin" | $KAFKA_HOME/bin/kafka-console-producer.sh \
-   --topic test-one --broker-list 10.30.3.10:9092,10.30.3.20:9092,10.30.3.30:9092
+   --topic test-one --broker-list vkc-br1:9092,vkc-br2:9092,vkc-br3:9092
 ```
 
 You can then test that the line was added by running the consumer
@@ -202,7 +202,7 @@ Redirecing this output to Kafka creates a basic form of a streaming producer.
 
 ```bash
 vmstat -a 1 -n 100 | $KAFKA_HOME/bin/kafka-console-producer.sh \
-   --topic test-one --broker-list 10.30.3.10:9092,10.30.3.20:9092,10.30.3.30:9092 &
+   --topic test-one --broker-list vkc-br1:9092,vkc-br2:9092,vkc-br3:9092 &
 ```
 
 While the producer runs in the background you can start the consumer to see what happens
