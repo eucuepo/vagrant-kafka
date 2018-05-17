@@ -8,7 +8,7 @@ This configuration will start and provision six CentOS6 VMs:
 * Three hosts forming a three node Apache Zookeeper Quorum (Replicated ZooKeeper)
 * Three Apache Kafka nodes with one broker each
 
-Each host is a Centos 6.9 64-bit VM provisioned with JDK 8 and Kafka 1.0.0. 
+Each host is a Centos 6.9 64-bit VM provisioned with JDK 8 and Kafka 1.1.0. 
 
 Here we will be using the verion of Zookeeper that comes pre-packaged with Kafka. This will be Zookeeper version 3.4.10 for the version of Kafka we use. 
 
@@ -27,14 +27,25 @@ Kafka is installed on all hosts and can be easily accessed through the environme
 
 Here is the mapping of VMs to their private IPs:
 
-| Name        | Address    |
-|-------------|------------|
-|zookeeper1   | 10.30.3.2  |
-|zookeeper2   | 10.30.3.3  |
-|zookeeper3   | 10.30.3.4  |
-|broker1      | 10.30.3.30 | 
-|broker2      | 10.30.3.20 |
-|broker3      | 10.30.3.10 |
+| VM Name    | Host Name | IP Address |
+| ---------- | --------- | ---------- |
+| zookeeper1 | vkc-zk1   | 10.30.3.2  |
+| zookeeper2 | vkc-zk2   | 10.30.3.3  |
+| zookeeper3 | vkc-zk3   | 10.30.3.4  |
+| broker1    | vkc-br1   | 10.30.3.30 |
+| broker2    | vkc-br2   | 10.30.3.20 |
+| broker3    | vkc-br3   | 10.30.3.10 |
+
+Hosts file entries:
+
+```
+10.30.3.2	vkc-zk1
+10.30.3.3 	vkc-zk2
+10.30.3.4 	vkc-zk3
+10.30.3.30 	vkc-br1
+10.30.3.20 	vkc-br2
+10.30.3.10 	vkc-br3
+```
 
 Zookeeper servers bind to port 2181. Kafka brokers bind to port 9092. 
 
@@ -117,7 +128,7 @@ After you have enough fun browsing ZK, type `ctl-C` to exit the shell.
 
 #### Get ZK version
 
-First we need to instal `nc`: 
+First we need to install `nc`: 
 
 ```bash
 sudo yum install nc -y
@@ -161,7 +172,7 @@ Send data to the Kafka topic
 
 ```bash
 echo "Yet another line from stdin" | $KAFKA_HOME/bin/kafka-console-producer.sh \
-   --topic test-one --broker-list 10.30.3.10:9092,10.30.3.20:9092,10.30.3.30:9092
+   --topic test-one --broker-list vkc-br1:9092,vkc-br2:9092,vkc-br3:9092
 ```
 
 You can then test that the line was added by running the consumer
@@ -191,7 +202,7 @@ Redirecing this output to Kafka creates a basic form of a streaming producer.
 
 ```bash
 vmstat -a 1 -n 100 | $KAFKA_HOME/bin/kafka-console-producer.sh \
-   --topic test-one --broker-list 10.30.3.10:9092,10.30.3.20:9092,10.30.3.30:9092 &
+   --topic test-one --broker-list vkc-br1:9092,vkc-br2:9092,vkc-br3:9092 &
 ```
 
 While the producer runs in the background you can start the consumer to see what happens
