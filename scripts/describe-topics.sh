@@ -1,3 +1,6 @@
 #!/bin/bash
 
-$KAFKA_HOME/bin/kafka-topics.sh --describe --zookeeper vkc-zk1:2181,vkc-zk2:2181,vkc-zk3:2181
+NB_ZK=$(cat /vagrant/scripts/number-zk.txt)
+ZK_LIST=$(echo $(for i in $(seq $NB_ZK); do echo vkc-zk$i:2181','; done)|sed -e 's/,$//g')
+
+$KAFKA_HOME/bin/kafka-topics.sh --describe --zookeeper $ZK_LIST
