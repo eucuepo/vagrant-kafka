@@ -10,6 +10,7 @@ $vm_cpus_zk = ENV.fetch('VAGRANT_ZK_CPU', 2).to_i
 $vm_cpus_br = ENV.fetch('VAGRANT_BR_CPU', 2).to_i
 $default_subnet = ENV.fetch('VAGRANT_SUBNET', '10.192.133.0')
 $default_gw = ENV.fetch('VAGRANT_GW', '10.192.133.1')
+$external_if = ENV.fetch('VAGRANT_EXTERNAL_IF', 'eno4')
 $default_zks = ENV.fetch('VAGRANT_ZKS', 2).to_i
 $default_brs = ENV.fetch('VAGRANT_BRS', 2).to_i
 $subnet_ip = "#{$default_subnet.split(%r{\.\d*$}).join('')}"
@@ -57,7 +58,7 @@ Vagrant.configure("2") do |config|
       s.vm.hostname = "zookeeper#{i}"
       # network configuration
       ip = $subnet_ip + "." + "#{i+210}" # Allocating VM ip addresses starting from .210
-      s.vm.network "public_network", ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
+      s.vm.network "public_network", bridge: $external_if, ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
       s.vm.provision "shell",
         run: "always",
         inline: "ip route add default via "+ $default_gw +" dev eth1"
@@ -79,7 +80,7 @@ Vagrant.configure("2") do |config|
       s.vm.hostname = "broker#{i}"
       # network configuration
       ip = $subnet_ip + "." + "#{i+210+$default_zks}" # Allocating VM ip addresses starting from .210, and last zk instance
-      s.vm.network "public_network", ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
+      s.vm.network "public_network", bridge: $external_if, ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
       s.vm.provision "shell",
         run: "always",
         inline: "ip route add default via "+ $default_gw +" dev eth1"
