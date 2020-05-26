@@ -37,13 +37,13 @@ Vagrant.configure("2") do |config|
 
   # common provisioning for all
   ## Create the list of hosts in the cluster inside a file to be loaded by hosts-file-setup script
-  File.open("scripts/number-zk.txt","a+") {|f| f.write("#{default_zks}\n") }
+  File.open("scripts/number-zk.txt","a+") {|f| f.write("#{$default_zks}\n") }
   (1..$default_zks).each do |i|
     ip = $subnet_ip + "." + "#{i+210}"
     hostname = "vkc-zk#{i}"
     File.open("scripts/hosts.txt","a+") {|f| f.write("#{ip} #{hostname}\n") }
   end
-  File.open("scripts/number-br.txt","a+") {|f| f.write("#{default_brs}\n") }
+  File.open("scripts/number-br.txt","a+") {|f| f.write("#{$default_brs}\n") }
   (1..$default_brs).each do |i|
     ip = $subnet_ip + "." + "#{i+210+$default_zks}"
     hostname = "vkc-br#{i}"
