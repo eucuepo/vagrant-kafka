@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "installing wget"
+su -c "yum -y install wget"
+
 echo "downloading kafka...$KAFKA_VERSION"
 
 #download kafka binaries if not present

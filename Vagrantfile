@@ -60,7 +60,7 @@ Vagrant.configure("2") do |config|
       s.vm.network "public_network", ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
       s.vm.provision "shell",
         run: "always",
-        inline: "route add default gw "+ $default_gw +" eth1"
+        inline: "ip route add default via "+ $default_gw +" dev eth1"
       #s.vm.network "private_network", ip: "10.30.3.#{i+1}", netmask: "255.255.255.0", virtualbox__intnet: "my-network", drop_nat_interface_default_route: true
       # compute capacity
       s.vm.provider :virtualbox do |vb|
@@ -82,7 +82,7 @@ Vagrant.configure("2") do |config|
       s.vm.network "public_network", ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
       s.vm.provision "shell",
         run: "always",
-        inline: "route add default gw "+ $default_gw +" eth1"
+        inline: "ip route add default via "+ $default_gw +" dev eth1"
       s.vm.provider :virtualbox do |vb|
         vb.customize ["modifyvm", :id, "--cpuexecutioncap", $default_limit_cpu]
         vb.gui = $vm_gui
