@@ -2,8 +2,8 @@
 
 echo "hosts file setup..."
 
-sudo cat scripts/hosts.txt >> /etc/hosts
-mv scripts/hosts.txt  scripts/hosts.txt.done
+sudo cat /vagrant/scripts/hosts.txt >> /etc/hosts
+mv /vagrant/scripts/hosts.txt  /vagrant/scripts/hosts.txt.done
 # sudo echo "10.30.3.2 vkc-zk1" | sudo tee -a /etc/hosts
 # sudo echo "10.30.3.3 vkc-zk2" | sudo tee -a /etc/hosts
 # sudo echo "10.30.3.4 vkc-zk3" | sudo tee -a /etc/hosts
