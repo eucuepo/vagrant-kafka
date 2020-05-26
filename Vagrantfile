@@ -39,12 +39,12 @@ Vagrant.configure("2") do |config|
   (1..$default_zks).each do |i|
     ip = $subnet_ip + "." + "#{i+210}"
     hostname = "vkc-zk#{i}"
-    File.open("hosts.txt","a+") {|f| f.write("#{ip} #{hostname}\n") }
+    File.open("scripts/hosts.txt","a+") {|f| f.write("#{ip} #{hostname}\n") }
   end
   (1..$default_brs).each do |i|
     ip = $subnet_ip + "." + "#{i+210+$default_zks}"
     hostname = "vkc-br#{i}"
-    File.open("hosts.txt","a+") {|f| f.write("#{ip} #{hostname}\n") }
+    File.open("scripts/hosts.txt","a+") {|f| f.write("#{ip} #{hostname}\n") }
   end
 
   config.vm.provision "shell", path: "scripts/hosts-file-setup.sh", env: vars
@@ -57,7 +57,7 @@ Vagrant.configure("2") do |config|
       s.vm.hostname = "zookeeper#{i}"
       # network configuration
       ip = $subnet_ip + "." + "#{i+210}" # Allocating VM ip addresses starting from .210
-      s.vm.network "public_network", ip: ip, netmask: "255.255.255.0", virtualbox__intnet: "kfk-network", drop_nat_interface_default_route: true
+      s.vm.network "public_network", ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
       s.vm.provision "shell",
         run: "always",
         inline: "route add default gw "+ $default_gw +" eth1"
@@ -79,7 +79,7 @@ Vagrant.configure("2") do |config|
       s.vm.hostname = "broker#{i}"
       # network configuration
       ip = $subnet_ip + "." + "#{i+210+$default_zks}" # Allocating VM ip addresses starting from .210, and last zk instance
-      s.vm.network "public_network", ip: ip, netmask: "255.255.255.0", virtualbox__intnet: "kfk-network", drop_nat_interface_default_route: true
+      s.vm.network "public_network", ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
       s.vm.provision "shell",
         run: "always",
         inline: "route add default gw "+ $default_gw +" eth1"
