@@ -8,6 +8,8 @@ $vm_memory_zk = ENV.fetch('VAGRANT_ZK_RAM', 2048).to_i
 $vm_memory_br = ENV.fetch('VAGRANT_BR_RAM', 2048).to_i
 $vm_cpus_zk = ENV.fetch('VAGRANT_ZK_CPU', 2).to_i
 $vm_cpus_br = ENV.fetch('VAGRANT_BR_CPU', 2).to_i
+$default_zk_disk = ENV.fetch('VAGRANT_ZK_DISK', '20')
+$default_br_disk = ENV.fetch('VAGRANT_BR_DISK', '20')
 $default_subnet = ENV.fetch('VAGRANT_SUBNET', '10.192.133.0')
 $default_gw = ENV.fetch('VAGRANT_GW', '10.192.133.1')
 $external_if = ENV.fetch('VAGRANT_EXTERNAL_IF', 'eno4')
@@ -71,6 +73,7 @@ Vagrant.configure("2") do |config|
         vb.gui = $vm_gui
         vb.memory = $vm_memory_zk
         vb.cpus = $vm_cpus_zk
+        vb.disk :disk, size: $default_zk_disk+"GB", primary: true
       end
       s.vm.provision "shell", run: "always", path: "scripts/zookeeper.sh", args:"#{i}", privileged: false, env: vars
     end
@@ -91,6 +94,7 @@ Vagrant.configure("2") do |config|
         vb.gui = $vm_gui
         vb.memory = $vm_memory_br
         vb.cpus = $vm_cpus_br
+        vb.disk :disk, size: $default_br_disk+"GB", primary: true
       end
       s.vm.provision "shell", run: "always", path: "scripts/broker.sh", args:"#{i}", privileged: false, env: vars
     end
