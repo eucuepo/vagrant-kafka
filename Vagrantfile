@@ -8,8 +8,9 @@ $vm_memory_zk = ENV.fetch('VAGRANT_ZK_RAM', 2048).to_i
 $vm_memory_br = ENV.fetch('VAGRANT_BR_RAM', 2048).to_i
 $vm_cpus_zk = ENV.fetch('VAGRANT_ZK_CPU', 2).to_i
 $vm_cpus_br = ENV.fetch('VAGRANT_BR_CPU', 2).to_i
-$default_zk_disk = ENV.fetch('VAGRANT_ZK_DISK', '20')
-$default_br_disk = ENV.fetch('VAGRANT_BR_DISK', '20')
+# The disk is not working for now. Will reprise these 2 options once I find why
+#$default_zk_disk = ENV.fetch('VAGRANT_ZK_DISK', '20')
+#$default_br_disk = ENV.fetch('VAGRANT_BR_DISK', '20')
 $default_subnet = ENV.fetch('VAGRANT_SUBNET', '10.192.133.0')
 $default_gw = ENV.fetch('VAGRANT_GW', '10.192.133.1')
 $external_if = ENV.fetch('VAGRANT_EXTERNAL_IF', 'eno4')
@@ -38,18 +39,19 @@ Vagrant.configure("2") do |config|
   as_str = vars.map{|k,str| ["export #{k}=#{str.gsub '$', '\$'}"] }.join("\n")
 
   # common provisioning for all
+  File.delete("scripts/hosts.txt") if File.exist?("scripts/hosts.txt")
   ## Create the list of hosts in the cluster inside a file to be loaded by hosts-file-setup script
-  File.open("scripts/number-zk.txt","a+") {|f| f.write("#{$default_zks}\n") }
+  File.open("scripts/number-zk.txt","w") {|f| f.write("#{$default_zks}\n") }
   (1..$default_zks).each do |i|
     ip = $subnet_ip + "." + "#{i+210}"
     hostname = "vkc-zk#{i}"
-    File.open("scripts/hosts.txt","a+") {|f| f.write("#{ip} #{hostname}\n") }
+    File.open("scripts/hosts.txt","a") {|f| f.write("#{ip} #{hostname}\n") }
   end
-  File.open("scripts/number-br.txt","a+") {|f| f.write("#{$default_brs}\n") }
+  File.open("scripts/number-br.txt","w") {|f| f.write("#{$default_brs}\n") }
   (1..$default_brs).each do |i|
     ip = $subnet_ip + "." + "#{i+210+$default_zks}"
     hostname = "vkc-br#{i}"
-    File.open("scripts/hosts.txt","a+") {|f| f.write("#{ip} #{hostname}\n") }
+    File.open("scripts/hosts.txt","a") {|f| f.write("#{ip} #{hostname}\n") }
   end
 
   config.vm.provision "shell", path: "scripts/hosts-file-setup.sh", env: vars
@@ -73,7 +75,8 @@ Vagrant.configure("2") do |config|
         vb.gui = $vm_gui
         vb.memory = $vm_memory_zk
         vb.cpus = $vm_cpus_zk
-        vb.disk :disk, size: $default_zk_disk+"GB", primary: true
+      # The disk is not working for now
+      #  vb.disk :disk, size: $default_zk_disk+"GB", primary: true
       end
       s.vm.provision "shell", run: "always", path: "scripts/zookeeper.sh", args:"#{i}", privileged: false, env: vars
     end
@@ -94,7 +97,8 @@ Vagrant.configure("2") do |config|
         vb.gui = $vm_gui
         vb.memory = $vm_memory_br
         vb.cpus = $vm_cpus_br
-        vb.disk :disk, size: $default_br_disk+"GB", primary: true
+      # The disk is not working for now
+      #  vb.disk :disk, size: $default_br_disk+"GB", primary: true
       end
       s.vm.provision "shell", run: "always", path: "scripts/broker.sh", args:"#{i}", privileged: false, env: vars
     end
