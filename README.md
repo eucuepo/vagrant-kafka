@@ -17,6 +17,7 @@ Vagrant configuration to setup a partitioned Apache Kafka installation with clus
 * The kafka version is now `2.5.0`
 * The user scripts in the original project are updated to make requests to a dynamic number of brokers.
 * There is a CPU limit artificially added to the VMs to tell the hypervisor not to overload the host's CPU if the VM is running at full power. This is a percentage, and sets the `cpuexecutioncap` of the hypervisor through the `VAGRANT_CPU_LIMIT` variable (default `50`).
+* The 4lw.commands.whitelist are on by default now. See more on the use below.
 * I recommand maintainig a `kafkarc` file with all your environment variables as those are volatile in your shell. Source this file each time you log in your host, or change terminal shell so that vagrant can get those values from the environment.
 
 Prerequisites
@@ -145,7 +146,7 @@ You can replace 10.192.133.211 with any ZK IP 10.192.133.<211,212> and execute t
 
 *Q: Which Zookeeper server is the leader?*
 
-Here is a simple script that asks each server for its mode:
+Here is a simple script that asks each server for its mode. This is possible thanks to enabling 4lw.commands.whitelist :
 
 ```bash
 for i in 211 212; do
@@ -155,9 +156,9 @@ done
 
 ### Kafka
 
-Let's explore other ways to ingest data to Kafa from the command line. 
+Let's explore other ways to ingest data to Kafa from the command line.
 
-Login to any of the 6 nodes
+Login to any of the 4 nodes
 
 ```bash
 vagrant ssh zookeeper1
