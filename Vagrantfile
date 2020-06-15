@@ -1,49 +1,107 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Config parameters
+$image_version = "centos/8"
+$vm_gui = false
+$vm_memory_zk = ENV.fetch('VAGRANT_ZK_RAM', 2048).to_i
+$vm_memory_br = ENV.fetch('VAGRANT_BR_RAM', 2048).to_i
+$vm_cpus_zk = ENV.fetch('VAGRANT_ZK_CPU', 2).to_i
+$vm_cpus_br = ENV.fetch('VAGRANT_BR_CPU', 2).to_i
+# The disk is not working for now. Will reprise these 2 options once I find why
+#$default_zk_disk = ENV.fetch('VAGRANT_ZK_DISK', '20')
+#$default_br_disk = ENV.fetch('VAGRANT_BR_DISK', '20')
+$default_subnet = ENV.fetch('VAGRANT_SUBNET', '10.192.133.0')
+$default_gw = ENV.fetch('VAGRANT_GW', '10.192.133.1')
+$external_if = ENV.fetch('VAGRANT_EXTERNAL_IF', 'eno4')
+$default_zks = ENV.fetch('VAGRANT_ZKS', 2).to_i
+$default_brs = ENV.fetch('VAGRANT_BRS', 2).to_i
+$subnet_ip = "#{$default_subnet.split(%r{\.\d*$}).join('')}"
+#  This setting controls how much cpu time a virtual CPU can use. A value of 50 implies a single virtual CPU can use up to 50% of a single host CPU.
+$default_limit_cpu = ENV.fetch('VAGRANT_CPU_LIMIT', '50')
+
+
+
 Vagrant.configure("2") do |config|
 
-  config.vm.box = "centos/6"
+  config.vm.box = $image_version
   config.ssh.forward_agent = true # So that boxes don't have to setup key-less ssh
   config.ssh.insert_key = false # To generate a new ssh key and don't use the default Vagrant one
 
   vars = { 
-     "KAFKA_VERSION" => "1.1.0",
-     "KAFKA_NAME" => "kafka_2.11-$KAFKA_VERSION",
+     "KAFKA_VERSION" => "2.5.0",
+     "KAFKA_NAME" => "kafka_2.12-$KAFKA_VERSION",
      "KAFKA_TARGET" => "/vagrant/tars/",
-     "KAFKA_HOME" => "$HOME/$KAFKA_NAME"
+     "KAFKA_HOME" => "$HOME/$KAFKA_NAME",
+     "KAFKA_OPTS" => "-Dzookeeper.4lw.commands.whitelist=*"
   }
 
   # escape environment variables to be loaded to /etc/profile.d/
   as_str = vars.map{|k,str| ["export #{k}=#{str.gsub '$', '\$'}"] }.join("\n")
 
-  # common provisioning for all 
+  # common provisioning for all
+  File.delete("scripts/hosts.txt") if File.exist?("scripts/hosts.txt")
+  ## Create the list of hosts in the cluster inside a file to be loaded by hosts-file-setup script
+  File.open("scripts/number-zk.txt","w") {|f| f.write("#{$default_zks}\n") }
+  (1..$default_zks).each do |i|
+    ip = $subnet_ip + "." + "#{i+210}"
+    hostname = "vkc-zk#{i}"
+    File.open("scripts/hosts.txt","a") {|f| f.write("#{ip} #{hostname}\n") }
+  end
+  File.open("scripts/number-br.txt","w") {|f| f.write("#{$default_brs}\n") }
+  (1..$default_brs).each do |i|
+    ip = $subnet_ip + "." + "#{i+210+$default_zks}"
+    hostname = "vkc-br#{i}"
+    File.open("scripts/hosts.txt","a") {|f| f.write("#{ip} #{hostname}\n") }
+  end
+
   config.vm.provision "shell", path: "scripts/hosts-file-setup.sh", env: vars
   config.vm.provision "shell", inline: "echo \"#{as_str}\" > /etc/profile.d/kafka_vagrant_env.sh", run: "always"
   config.vm.provision "shell", path: "scripts/init.sh", env: vars
  
   # configure zookeeper cluster
-  (1..3).each do |i|
+  (1..$default_zks).each do |i|
     config.vm.define "zookeeper#{i}" do |s|
       s.vm.hostname = "zookeeper#{i}"
-      s.vm.network "private_network", ip: "10.30.3.#{i+1}"
+      # network configuration
+      ip = $subnet_ip + "." + "#{i+210}" # Allocating VM ip addresses starting from .210
+      s.vm.network "public_network", bridge: $external_if, ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
+      s.vm.provision "shell",
+        run: "always",
+        inline: "ip route add default via "+ $default_gw +" dev eth1"
       #s.vm.network "private_network", ip: "10.30.3.#{i+1}", netmask: "255.255.255.0", virtualbox__intnet: "my-network", drop_nat_interface_default_route: true
+      # compute capacity
+      s.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--cpuexecutioncap", $default_limit_cpu]
+        vb.gui = $vm_gui
+        vb.memory = $vm_memory_zk
+        vb.cpus = $vm_cpus_zk
+      # The disk is not working for now
+      #  vb.disk :disk, size: $default_zk_disk+"GB", primary: true
+      end
       s.vm.provision "shell", run: "always", path: "scripts/zookeeper.sh", args:"#{i}", privileged: false, env: vars
     end
   end
 
   # configure brokers
-  (1..3).each do |i|
+  (1..$default_brs).each do |i|
     config.vm.define "broker#{i}" do |s|
       s.vm.hostname = "broker#{i}"
-      s.vm.network "private_network", ip: "10.30.3.#{4-i}0"
-      #s.vm.network "private_network", ip: "10.30.3.#{4-i}0", netmask: "255.255.255.0", virtualbox__intnet: "my-network", drop_nat_interface_default_route: true
+      # network configuration
+      ip = $subnet_ip + "." + "#{i+210+$default_zks}" # Allocating VM ip addresses starting from .210, and last zk instance
+      s.vm.network "public_network", bridge: $external_if, ip: ip, netmask: "255.255.255.0", drop_nat_interface_default_route: true
+      s.vm.provision "shell",
+        run: "always",
+        inline: "ip route add default via "+ $default_gw +" dev eth1"
+      s.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--cpuexecutioncap", $default_limit_cpu]
+        vb.gui = $vm_gui
+        vb.memory = $vm_memory_br
+        vb.cpus = $vm_cpus_br
+      # The disk is not working for now
+      #  vb.disk :disk, size: $default_br_disk+"GB", primary: true
+      end
       s.vm.provision "shell", run: "always", path: "scripts/broker.sh", args:"#{i}", privileged: false, env: vars
     end
-  end
-
-  config.vm.provider "virtualbox" do |v|
-    #  This setting controls how much cpu time a virtual CPU can use. A value of 50 implies a single virtual CPU can use up to 50% of a single host CPU.
-    v.customize ["modifyvm", :id, "--cpuexecutioncap", "50"]
   end
 end

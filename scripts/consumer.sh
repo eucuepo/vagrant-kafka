@@ -1,7 +1,11 @@
 #!/bin/bash
 
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+NB_BROKERS=$(cat $parent_path/number-br.txt)
+BROKER_LIST=$(echo $(for i in $(seq $NB_BROKERS); do echo vkc-br$i:9092','; done)|sed -e 's/,$//g')
+
 if [ $# -gt 0 ]; then
-    $KAFKA_HOME/bin/kafka-console-consumer.sh --from-beginning --topic $1 --bootstrap-server vkc-br1:9092,vkc-br2:9092,vkc-br3:9092
+    $KAFKA_HOME/bin/kafka-console-consumer.sh --from-beginning --topic $1 --bootstrap-server $BROKER_LIST
 else
     echo "Usage: "$(basename $0)" <topic_name>"
 fi
