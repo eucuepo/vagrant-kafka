@@ -32,7 +32,8 @@ Vagrant.configure("2") do |config|
      "KAFKA_VERSION" => "2.5.0",
      "KAFKA_NAME" => "kafka_2.12-$KAFKA_VERSION",
      "KAFKA_TARGET" => "/vagrant/tars/",
-     "KAFKA_HOME" => "$HOME/$KAFKA_NAME"
+     "KAFKA_HOME" => "$HOME/$KAFKA_NAME",
+     "KAFKA_OPTS" => "-Dzookeeper.4lw.commands.whitelist=*"
   }
 
   # escape environment variables to be loaded to /etc/profile.d/

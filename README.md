@@ -1,22 +1,29 @@
 Vagrant - Kafka
 =============
 
-Vagrant configuration to setup a partitioned Apache Kafka installation with clustered Apache Zookeeper.
+Vagrant configuration to setup a partitioned Apache Kafka installation with clustered Apache Zookeeper. This project is an update from the orginal project with these changes:
 
-This configuration will start and provision six CentOS6 VMs:
-
-* Three hosts forming a three node Apache Zookeeper Quorum (Replicated ZooKeeper)
-* Three Apache Kafka nodes with one broker each
-
-Each host is a Centos 6.9 64-bit VM provisioned with JDK 8 and Kafka 1.1.0. 
-
-Here we will be using the verion of Zookeeper that comes pre-packaged with Kafka. This will be Zookeeper version 3.4.10 for the version of Kafka we use. 
+* The number of Zookeeper and Broker virtual machines is now dynamic and set by the user
+   * The default value is 2. There is no predefined values, or limit.
+   * To change the value, set the `VAGRANT_ZKS` and `VAGRANT_BRS` value in the environment before `vagrant up` command. 
+* The size of the VM is also dynamic and can be set also through environment variables
+   * The dafault value is 2 vCPUs and 2048MB of RAM for both VMs
+   * These are the environment variables you want to change if you want to tweak that: `VAGRANT_ZK_CPU`, `VAGRANT_ZK_RAM` for zookeeper and `VAGRANT_BR_CPU`, `VAGRANT_BR_RAM` for the broker.
+* The subnet for machines is also configurable
+   * The default is `10.192.133.0` and can be set through `VAGRANT_SUBNET` in the environment
+   * Additional useful network parameters that are configurable are: `VAGRANT_GW`(default `10.192.133.1`) and `VAGRANT_EXTERNAL_IF` (default `eno4`).
+   * The values of the network parameters are tailored to my environment. Your host is probably different. Set the default gateway and outgoing interface that matches your own host to allow the machines to connect to the Internet and to be reachable.
+* The VMs guest operating system is `centos/8` 64-bit
+* The kafka version is now `2.5.0`
+* The user scripts in the original project are updated to make requests to a dynamic number of brokers.
+* There is a CPU limit artificially added to the VMs to tell the hypervisor not to overload the host's CPU if the VM is running at full power. This is a percentage, and sets the `cpuexecutioncap` of the hypervisor through the `VAGRANT_CPU_LIMIT` variable (default `50`).
+* I recommand maintainig a `kafkarc` file with all your environment variables as those are volatile in your shell. Source this file each time you log in your host, or change terminal shell so that vagrant can get those values from the environment.
 
 Prerequisites
 -------------------------
 
-* Vagrant (tested with 2.0.2) **[make sure you are on 2.x.x version of Vagrant]**
-* VirtualBox (tested with 5.1.12)
+* Vagrant (tested with 2.2.9) **[make sure you are on 2.x.x version of Vagrant]**
+* VirtualBox (tested with 5.1.38)
 
 Setup
 -------------------------
@@ -29,22 +36,18 @@ Here is the mapping of VMs to their private IPs:
 
 | VM Name    | Host Name | IP Address |
 | ---------- | --------- | ---------- |
-| zookeeper1 | vkc-zk1   | 10.30.3.2  |
-| zookeeper2 | vkc-zk2   | 10.30.3.3  |
-| zookeeper3 | vkc-zk3   | 10.30.3.4  |
-| broker1    | vkc-br1   | 10.30.3.30 |
-| broker2    | vkc-br2   | 10.30.3.20 |
-| broker3    | vkc-br3   | 10.30.3.10 |
+| zookeeper1 | vkc-zk1   | 10.192.133.211  |
+| zookeeper2 | vkc-zk2   | 10.192.133.212  |
+| broker1    | vkc-br1   | 10.192.133.213 |
+| broker2    | vkc-br2   | 10.192.133.214 |
 
 Hosts file entries:
 
 ```
-10.30.3.2	vkc-zk1
-10.30.3.3 	vkc-zk2
-10.30.3.4 	vkc-zk3
-10.30.3.30 	vkc-br1
-10.30.3.20 	vkc-br2
-10.30.3.10 	vkc-br3
+10.192.133.211 vkc-zk1
+10.192.133.212 vkc-zk2
+10.192.133.213 vkc-br1
+10.192.133.214 vkc-br2
 ```
 
 Zookeeper servers bind to port 2181. Kafka brokers bind to port 9092. 
@@ -52,17 +55,15 @@ Zookeeper servers bind to port 2181. Kafka brokers bind to port 9092.
 Let's test it!
 -------------------------
 
-First test that all nodes are up ```vagrant status```. The result should be similar to this:
+First test that all nodes are up ```vagrant status```. The result should be similar to this, if you use the default values of this project :
 
 ```
 Current machine states:
 
 zookeeper1                running (virtualbox)
 zookeeper2                running (virtualbox)
-zookeeper3                running (virtualbox)
 broker1                   running (virtualbox)
 broker2                   running (virtualbox)
-broker3                   running (virtualbox)
 
 
 This environment represents multiple VMs. The VMs are all listed
@@ -104,7 +105,7 @@ Here are some commands you can run on any of the nodes to see some of the intern
 
 #### Open a ZK shell
 
-```$KAFKA_HOME/bin/zookeeper-shell.sh 10.30.3.2:2181``` 
+```$KAFKA_HOME/bin/zookeeper-shell.sh 10.192.133.211:2181``` 
 
 (you can use the IP of any of the ZK servers)
 
@@ -137,18 +138,18 @@ sudo yum install nc -y
 To get the version of ZK type:
 
 ```bash
-echo status | nc 10.30.3.2 2181
+echo status | nc 10.192.133.211 2181
 ```
 
-You can replace 10.30.3.2 with any ZK IP 10.30.3.<2,3,4> and execute the above command from any node within the cluster. 
+You can replace 10.192.133.211 with any ZK IP 10.192.133.<211,212> and execute the above command from any node within the cluster. 
 
 *Q: Which Zookeeper server is the leader?*
 
 Here is a simple script that asks each server for its mode:
 
 ```bash
-for i in 2 3 4; do
-   echo "10.30.3.$i is a "$(echo status | nc 10.30.3.$i 2181 | grep ^Mode | awk '{print $2}')
+for i in 211 212; do
+   echo "10.192.133.$i is a "$(echo status | nc 10.192.133.$i 2181 | grep ^Mode | awk '{print $2}')
 done
 ```
 
@@ -172,7 +173,7 @@ Send data to the Kafka topic
 
 ```bash
 echo "Yet another line from stdin" | $KAFKA_HOME/bin/kafka-console-producer.sh \
-   --topic test-one --broker-list vkc-br1:9092,vkc-br2:9092,vkc-br3:9092
+   --topic test-one --broker-list vkc-br1:9092,vkc-br2:9092
 ```
 
 You can then test that the line was added by running the consumer
