@@ -3,13 +3,13 @@
 
 Vagrant.configure("2") do |config|
 
-  config.vm.box = "centos/6"
+  config.vm.box = "centos/7"
   config.ssh.forward_agent = true # So that boxes don't have to setup key-less ssh
   config.ssh.insert_key = false # To generate a new ssh key and don't use the default Vagrant one
 
   vars = { 
-     "KAFKA_VERSION" => "2.1.1",
-     "KAFKA_NAME" => "kafka_2.12-$KAFKA_VERSION",
+     "KAFKA_VERSION" => "2.8.0",
+     "KAFKA_NAME" => "kafka_2.13-$KAFKA_VERSION",
      "KAFKA_TARGET" => "/vagrant/tars/",
      "KAFKA_HOME" => "$HOME/$KAFKA_NAME"
   }
