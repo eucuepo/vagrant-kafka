@@ -8,7 +8,7 @@ This configuration will start and provision six CentOS6 VMs:
 * Three hosts forming a three node Apache Zookeeper Quorum (Replicated ZooKeeper)
 * Three Apache Kafka nodes with one broker each
 
-Each host is a Centos 6.9 64-bit VM provisioned with JDK 8 and Kafka 1.1.0. 
+Each host is a Centos 7 64-bit VM provisioned with JDK 8 and Kafka 1.1.0. 
 
 Here we will be using the verion of Zookeeper that comes pre-packaged with Kafka. This will be Zookeeper version 3.4.10 for the version of Kafka we use. 
 
@@ -27,14 +27,14 @@ Kafka is installed on all hosts and can be easily accessed through the environme
 
 Here is the mapping of VMs to their private IPs:
 
-| VM Name    | Host Name | IP Address |
-| ---------- | --------- | ---------- |
-| zookeeper1 | vkc-zk1   | 10.30.3.2  |
-| zookeeper2 | vkc-zk2   | 10.30.3.3  |
-| zookeeper3 | vkc-zk3   | 10.30.3.4  |
-| broker1    | vkc-br1   | 10.30.3.30 |
-| broker2    | vkc-br2   | 10.30.3.20 |
-| broker3    | vkc-br3   | 10.30.3.10 |
+| VM Name    | Host Name | IP Address    |
+| ---------- | --------- | ----------    |
+| zookeeper1 | vkc-zk1   | 192.168.56.2  |
+| zookeeper2 | vkc-zk2   | 192.168.56.3  |
+| zookeeper3 | vkc-zk3   | 192.168.56.4  |
+| broker1    | vkc-br1   | 192.168.56.30 |
+| broker2    | vkc-br2   | 192.168.56.20 |
+| broker3    | vkc-br3   | 192.168.56.10 |
 
 Hosts file entries:
 
@@ -104,7 +104,7 @@ Here are some commands you can run on any of the nodes to see some of the intern
 
 #### Open a ZK shell
 
-```$KAFKA_HOME/bin/zookeeper-shell.sh 10.30.3.2:2181``` 
+```$KAFKA_HOME/bin/zookeeper-shell.sh 192.168.56:2181``` 
 
 (you can use the IP of any of the ZK servers)
 
@@ -137,10 +137,10 @@ sudo yum install nc -y
 To get the version of ZK type:
 
 ```bash
-echo status | nc 10.30.3.2 2181
+echo status | nc 192.168.56.2 2181
 ```
 
-You can replace 10.30.3.2 with any ZK IP 10.30.3.<2,3,4> and execute the above command from any node within the cluster. 
+You can replace 192.168.56.2 with any ZK IP 192.168.56.<2,3,4> and execute the above command from any node within the cluster. 
 
 *Q: Which Zookeeper server is the leader?*
 
@@ -148,7 +148,7 @@ Here is a simple script that asks each server for its mode:
 
 ```bash
 for i in 2 3 4; do
-   echo "10.30.3.$i is a "$(echo status | nc 10.30.3.$i 2181 | grep ^Mode | awk '{print $2}')
+   echo "192.168.56.$i is a "$(echo status | nc 192.168.56.$i 2181 | grep ^Mode | awk '{print $2}')
 done
 ```
 
