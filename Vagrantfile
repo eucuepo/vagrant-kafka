@@ -3,12 +3,12 @@
 
 Vagrant.configure("2") do |config|
 
-  config.vm.box = "centos/6"
+  config.vm.box = "centos/7"
   config.ssh.forward_agent = true # So that boxes don't have to setup key-less ssh
   config.ssh.insert_key = false # To generate a new ssh key and don't use the default Vagrant one
 
   vars = { 
-     "KAFKA_VERSION" => "1.1.0",
+     "KAFKA_VERSION" => "2.1.1",
      "KAFKA_NAME" => "kafka_2.11-$KAFKA_VERSION",
      "KAFKA_TARGET" => "/vagrant/tars/",
      "KAFKA_HOME" => "$HOME/$KAFKA_NAME"
@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
   (1..3).each do |i|
     config.vm.define "zookeeper#{i}" do |s|
       s.vm.hostname = "zookeeper#{i}"
-      s.vm.network "private_network", ip: "10.30.3.#{i+1}"
+      s.vm.network "private_network", ip: "192.168.56.#{i+1}"
       #s.vm.network "private_network", ip: "10.30.3.#{i+1}", netmask: "255.255.255.0", virtualbox__intnet: "my-network", drop_nat_interface_default_route: true
       s.vm.provision "shell", run: "always", path: "scripts/zookeeper.sh", args:"#{i}", privileged: false, env: vars
     end
@@ -36,7 +36,7 @@ Vagrant.configure("2") do |config|
   (1..3).each do |i|
     config.vm.define "broker#{i}" do |s|
       s.vm.hostname = "broker#{i}"
-      s.vm.network "private_network", ip: "10.30.3.#{4-i}0"
+      s.vm.network "private_network", ip: "192.168.56.#{4-i}0"
       #s.vm.network "private_network", ip: "10.30.3.#{4-i}0", netmask: "255.255.255.0", virtualbox__intnet: "my-network", drop_nat_interface_default_route: true
       s.vm.provision "shell", run: "always", path: "scripts/broker.sh", args:"#{i}", privileged: false, env: vars
     end

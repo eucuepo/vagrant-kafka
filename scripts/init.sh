@@ -1,7 +1,19 @@
 #!/bin/bash
 
+setenforce 0
+sed -i 's/SELINUX=\(enforcing\|permissive\)/SELINUX=disabled/g' /etc/selinux/config
+
+echo  "Disabling IPv6"
+echo "net.ipv6.conf.all.disable_ipv6 = 1
+      net.ipv6.conf.default.disable_ipv6 = 1
+      net.ipv6.conf.lo.disable_ipv6 = 1
+      net.ipv6.conf.eth0.disable_ipv6 = 1" >> /etc/sysctl.conf
+
+sysctl -p      
+
 echo "downloading kafka...$KAFKA_VERSION"
 
+su -c "yum -y install wget net-tools curl telnet"
 #download kafka binaries if not present
 if [ ! -f  $KAFKA_TARGET/$KAFKA_NAME.tgz ]; then
    mkdir -p $KAFKA_TARGET
